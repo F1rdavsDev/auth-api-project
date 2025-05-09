@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\LoginRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -17,23 +18,31 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        return response()->json([
-            'token' => $user->createToken('api-token')->plainTextToken
-        ]);
+       $token = $user->createToken('auth_token')->plainTextToken;
+
+    return response()->json([
+        'name' => $user->name,
+        'access_token' => $token,
+        'token_type' => 'Bearer',
+    ]);
     }
 
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $request->validate(['email' => 'required|email', 'password' => 'required']);
+        
         $user = User::where('email', $request->email)->first();
 
         if (! $user || ! Hash::check($request->password, $user->password)) {
             return response()->json(['message' => 'Login error'], 401);
         }
 
-        return response()->json([
-            'token' => $user->createToken('api-token')->plainTextToken
-        ]);
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+    return response()->json([
+        'name' => $user->name,
+        'access_token' => $token,
+        'token_type' => 'Bearer',
+    ]);
     }
 
     public function logout(Request $request)
